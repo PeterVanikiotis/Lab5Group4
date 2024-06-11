@@ -33,6 +33,4 @@ public class ProductList extends ArrayAdapter<Product> {
         textViewPrice.setText(String.valueOf(product.getPrice()));
         return listViewItem;
     }
-
-
 }

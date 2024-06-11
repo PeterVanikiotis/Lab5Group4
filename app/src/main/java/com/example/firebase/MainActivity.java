@@ -2,6 +2,7 @@ package com.example.firebase;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -14,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -69,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
         listViewProducts.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+
                 Product product = products.get(i);
                 showUpdateDeleteDialog(product.getId(), product.getProductName());
                 return true;
@@ -77,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showUpdateDeleteDialog(final String productId, String productName) {
-
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.update_dialog, null);
@@ -114,23 +116,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateProduct(String id, String name, double price) {
-
-        Toast.makeText(getApplicationContext(), "NOT IMPLEMENTED YET", Toast.LENGTH_LONG).show();
+        Product p = new Product(id, name, price);
+        databaseProducts.child(id).setValue(p);
     }
 
     private void deleteProduct(String id) {
-
-        Toast.makeText(getApplicationContext(), "NOT IMPLEMENTED YET", Toast.LENGTH_LONG).show();
+        assert id!=null;
+        try {
+            FirebaseDatabase.getInstance().getReference("products").child(id).removeValue();
+            Toast.makeText(getApplicationContext(), "Product deleted!",
+                    Toast.LENGTH_LONG).show();
+        }
+        catch (Error e) {
+            Toast.makeText(getApplicationContext(), "Could not remove product :(",
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     private void addProduct() {
+        double textprice;
+        try {
+            textprice = Double.parseDouble(editTextPrice.getText().toString());
+        } catch (NumberFormatException e){
+            Toast.makeText(getApplicationContext(), "Please input number !", Toast.LENGTH_LONG).show();
+            return;
+        }
 
-        String id = myRef.push().getKey();
-        Product p = new Product(editTextName.getText().toString(), Integer.parseInt(editTextPrice.getText().toString()));
-        assert id != null;
-        myRef.child(id).setValue(p);
-        editTextName.setText("");
-        editTextPrice.setText("");
+        String textname = editTextName.getText().toString();
+        if ( ! textname.isEmpty() ){
+            String id = myRef.push().getKey();
+            Product p = new Product(id, textname, textprice);
+            assert id != null;
+            myRef.child(id).setValue(p);
+            editTextName.setText("");
+            editTextPrice.setText("");
+        }
     }
     protected void onStart() {
         super.onStart();

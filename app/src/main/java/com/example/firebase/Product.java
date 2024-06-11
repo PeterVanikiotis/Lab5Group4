@@ -24,9 +24,7 @@ public class Product {
         _id = id;
     }
 
-    public String getId() {
-        return _id;
-    }
+    public String getId() {return _id; }
 
     public void setProductName(String productname) {
         _productname = productname;
